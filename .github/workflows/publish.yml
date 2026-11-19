@@ -1,0 +1,57 @@
+name: Publish site
+# Decodes binary assets committed as base64 (b64src/<path>.b64 -> <path>) and mirrors main to gh-pages (GitHub Pages source).
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: write
+  pages: write
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Decode base64 assets
+        run: |
+          set -e
+          if [ -d b64src ]; then
+            find b64src -name '*.b64' | while read -r f; do
+              out="${f#b64src/}"; out="${out%.b64}"
+              mkdir -p "$(dirname "$out")"
+              base64 -d "$f" > "$out"
+              echo "decoded $out"
+            done
+            git rm -r -q b64src
+          fi
+      - name: Commit and mirror to gh-pages
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --cached --quiet || git commit -m "Decode binary assets [skip ci]"
+          git push origin HEAD:main
+          git push origin HEAD:gh-pages --force
+      - name: Enable GitHub Pages from the gh-pages branch if needed
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set +e
+          echo "Creating or updating Pages site (gh-pages /)..."
+          gh api --method POST "repos/${{ github.repository }}/pages" \
+            -H "Accept: application/vnd.github+json" \
+            -f build_type=legacy \
+            -f "source[branch]=gh-pages" \
+            -f "source[path]=/" \
+            || true
+          gh api --method PUT "repos/${{ github.repository }}/pages" \
+            -H "Accept: application/vnd.github+json" \
+            -f build_type=legacy \
+            -f "source[branch]=gh-pages" \
+            -f "source[path]=/" \
+            || true
+          gh api --method POST "repos/${{ github.repository }}/pages/builds" \
+            -H "Accept: application/vnd.github+json" \
+            || true
