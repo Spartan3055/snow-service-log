@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://spartan3055.github.io/snow-service-log/sitemap.xml

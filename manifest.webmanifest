@@ -1,0 +1,17 @@
+{
+  "name": "Storm File service log",
+  "short_name": "Storm File",
+  "description": "Offline snow and ice service log. Data stays on this device.",
+  "start_url": "https://spartan3055.github.io/snow-service-log/log/",
+  "scope": "https://spartan3055.github.io/snow-service-log/",
+  "display": "standalone",
+  "background_color": "#f3f5f7",
+  "theme_color": "#1e3148",
+  "icons": [
+    {
+      "src": "https://spartan3055.github.io/snow-service-log/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}
